@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <unistd.h>
+#include<sys/types.h>
+
+int file_opening(const char* dir, const char* mode) {
+	
+	FILE* file = fopen(dir, mode);
+	if(file == NULL) {
+		perror("FOPEN: did not succeed to open the file\n");
+		return -1;		
+	}
+	else {
+		printf("Successfully opened file\n");
+		int close_code = fclose(file);
+		return close_code; //EOF for unsuccessful closing		
+	}
+}
+
+int main() {
+	uid_t real_id = getuid();
+	uid_t effective_id = geteuid();
+	
+	printf("User real ID = %u\nUser effective ID = %u\n", real_id, effective_id);
+	
+	int code = file_opening("./test", "r");
+	
+	int set_id = setuid(getuid());
+	if(set_id == -1) {
+		perror("SETUID: unsuccessful id setting\n");
+		return set_id;
+	}
+	else {
+		printf("Manually set id: Now User real ID = %u\nUser effective ID = %u\n",
+									getuid(), geteuid());
+		code = file_opening("./test", "r");
+		return code;		
+	}
+}
